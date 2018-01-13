@@ -4,7 +4,10 @@ import (
 	"fmt"
 	"flag"
 	"go-rpio"
+	"net/http"
 )
+
+var relay rpio.Pin
 
 func main() {
 	var command string
@@ -20,7 +23,7 @@ func main() {
 
 	defer rpio.Close()
 	rpio.Open()
-	var relay = rpio.Pin(26)
+	relay = rpio.Pin(26)
 
 	relay.Output()
 
@@ -36,4 +39,33 @@ func main() {
 		fmt.Println("status?")
 		fmt.Println("Current State=", relay.Read())
 	}
+	if server {
+		fmt.Println("Current State=", relay.Read())
+		http.HandleFunc("/ON", fireOn)
+		http.HandleFunc("/OFF", fireOff)
+		http.HandleFunc("/STATUS", fireStatus)
+		err := http.ListenAndServe(":8080",nil)
+		if err != nil {
+			panic("Error starting server" + err.Error())
+		}
+	}
+
+}
+
+func fireOn (w http.ResponseWriter, r *http.Request) {
+	relay.High()
+	fmt.Fprintf(w, "On")
+}
+
+func fireOff (w http.ResponseWriter, r *http.Request) {
+	relay.Low()
+	fmt.Fprintf(w, "Off")
+}
+
+func fireStatus (w http.ResponseWriter, r *http.Request) {
+	var stat string = "OFF"
+	if relay.Read() > 0 {
+		stat = "ON"
+	}
+	fmt.Fprintf(w, "Status = " + stat )
 }
