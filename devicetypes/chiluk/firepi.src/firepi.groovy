@@ -1,3 +1,5 @@
+import org.apache.tools.ant.taskdefs.Definer
+
 /**
  *  firepi
  *
@@ -13,6 +15,10 @@
  *  for the specific language governing permissions and limitations under the License.
  *
  */
+def getIP() {
+	return "192.168.1.61"
+}
+
 metadata {
 	definition (name: "firepi", namespace: "chiluk", author: "Dave Chiluk") {
 		capability "Health Check"
@@ -69,10 +75,41 @@ def refresh() {
 
 def on() {
 	log.debug "Executing 'on'"
-	// TODO: handle 'on' command
+
+	def params = [
+		uri: " http://" + IP + ":8080/",
+		path "firepi/ON"
+	]
+
+	try {
+		httpGet(params) { resp ->
+			resp.headers.each {
+				log.debug "$(it.name) : $(it.value)"
+			}
+			log.debug "response contentType: ${resp.contentType}"
+        	log.debug "response data: ${resp.data}"
+		}
+	} catch (e) {
+		log.error "something went wrong: $e"
+	}
 }
 
 def off() {
 	log.debug "Executing 'off'"
-	// TODO: handle 'off' command
+	def params = [
+			uri: " http://" + IP + ":8080/",
+			path "firepi/OFF"
+	]
+
+	try {
+		httpGet(params) { resp ->
+			resp.headers.each {
+				log.debug "$(it.name) : $(it.value)"
+			}
+			log.debug "response contentType: ${resp.contentType}"
+			log.debug "response data: ${resp.data}"
+		}
+	} catch (e) {
+		log.error "something went wrong: $e"
+	}
 }
