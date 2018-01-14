@@ -7,6 +7,9 @@ import (
 	"net/http"
 )
 
+const webdir string = "firepi/"
+const firePlaceIOPin int = 26
+
 var relay rpio.Pin
 
 func main() {
@@ -23,7 +26,7 @@ func main() {
 
 	defer rpio.Close()
 	rpio.Open()
-	relay = rpio.Pin(26)
+	relay = rpio.Pin(firePlaceIOPin)
 
 	relay.Output()
 
@@ -41,15 +44,14 @@ func main() {
 	}
 	if server {
 		fmt.Println("Current State=", relay.Read())
-		http.HandleFunc("/ON", fireOn)
-		http.HandleFunc("/OFF", fireOff)
-		http.HandleFunc("/STATUS", fireStatus)
+		http.HandleFunc(webdir + "ON", fireOn)
+		http.HandleFunc(webdir +"OFF", fireOff)
+		http.HandleFunc(webdir +"STATUS", fireStatus)
 		err := http.ListenAndServe(":8080",nil)
 		if err != nil {
 			panic("Error starting server" + err.Error())
 		}
 	}
-
 }
 
 func fireOn (w http.ResponseWriter, r *http.Request) {
